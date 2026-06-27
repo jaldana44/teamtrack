@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeamTrack</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="description" content="TeamTrack - Seguimiento y Evaluación de Equipos Académicos">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <style>
+    /* ============================================ */
+    /* TeamTrack - Estilos                        */
+    /* ============================================ */
+
+    :root {
+      --primary: #1a56db;
+      --primary-dark: #1544b0;
+      --primary-light: #e8eefb;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --white: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.12);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --radius: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--primary);
+      color: var(--white);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-md);
+    }
+    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+    .header-user { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+    .header-user .rol-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .btn-logout {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+    /* CONTENEDOR PRINCIPAL */
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+    /* PANTALLAS */
+    .pantalla { display: none; }
+    .pantalla.activa { display: block; }
+
+    /* LOGIN */
+    .login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+    }
+    .login-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .login-box h1 {
+      color: var(--primary);
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .login-box p {
+      color: var(--gray-500);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    /* FORMULARIOS */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    /* BOTONES */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--gray-300);
+      color: var(--gray-700);
+    }
+    .btn-outline:hover { background: var(--gray-100); }
+    .btn-block { width: 100%; justify-content: center; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* CARDS */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .card-header h3 { font-size: 16px; color: var(--gray-900); }
+    .card h2 { font-size: 18px; margin-bottom: 16px; color: var(--gray-900); }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-primary { background: var(--primary-light); color: var(--primary); }
+    .badge-success { background: #d1fae5; color: var(--success); }
+    .badge-warning { background: #fef3c7; color: var(--warning); }
+    .badge-danger { background: #fee2e2; color: var(--danger); }
+
+    /* TABS / NAV */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--white);
+      padding: 4px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .nav-tab {
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--gray-500);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-tab.activo { background: var(--primary); color: white; }
+    .nav-tab:hover:not(.activo) { background: var(--gray-100); }
+
+    /* TABLA */
+    .tabla-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--gray-50);
+      color: var(--gray-500);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--gray-200);
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); }
+    tr:hover td { background: var(--gray-50); }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+    }
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    /* EVALUACIÓN */
+    .evaluacion-criterio {
+      background: var(--gray-50);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--gray-200);
+    }
+    .evaluacion-criterio h4 { margin-bottom: 8px; font-size: 15px; }
+    .evaluacion-criterio p { font-size: 13px; color: var(--gray-500); margin-bottom: 10px; }
+    .puntuacion-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .puntuacion-btn {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--gray-300);
+      border-radius: 50%;
+      background: var(--white);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .puntuacion-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .puntuacion-btn.seleccionado {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    /* PROGRESS BAR */
+    .progress-bar {
+      background: var(--gray-200);
+      border-radius: 10px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    /* ALERT */
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-info { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #bfdbfe; }
+
+    /* LOADING */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray-500);
+    }
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* VACÍO */
+    .vacio {
+      text-align: center;
+      padding: 40px;
+      color: var(--gray-500);
+    }
+    .vacio-icono { font-size: 48px; margin-bottom: 12px; }
+
+    /* ACCIONES */
+    .acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .container { padding: 12px; }
+      .login-box { padding: 24px; }
+      .header h1 { font-size: 16px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-tabs { gap: 2px; }
+      .nav-tab { padding: 8px 10px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================ -->
+  <!-- PANTALLA: LOGIN                              -->
+  <!-- ============================================ -->
+  <div id="pantalla-login" class="pantalla activa">
+    <div class="login-container">
+      <div class="login-box">
+        <h1>TeamTrack</h1>
+        <p>Seguimiento y Evaluación de Equipos Académicos</p>
+        <div id="login-error" class="alert alert-error" style="display:none;"></div>
+        <div class="form-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="login-email" placeholder="tu@correo.edu.co">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="login-password" placeholder="Tu contraseña">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="iniciarSesion()" id="btn-login">
+          Iniciar Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PANTALLA: DOCENTE                            -->
+  <!-- ============================================ -->
+  <div id="pantalla-docente" class="pantalla">
+    <div class="header">
+      <h1>TeamTrack</h1>
+      <div class="header-user">
+        <span id="docente-nombre"></span>
+        <span class="rol-badge">DOCENTE</span>
+        <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="nav-tabs">
+        <button class="nav-tab activo" onclick="tabDocente('cursos')">Mis Cursos</button>
+        <button class="nav-tab" onclick="tabDocente('rubricas')">Rúbricas</button>
+        <button class="nav-tab" onclick="tabDocente('evaluaciones')">Evaluaciones</button>
+        <button class="nav-tab" onclick="tabDocente('analitica')">Analítica</button>
+      </div>
+
+      <!-- TAB: Cursos -->
+      <div id="tab-cursos" class="tab-content">
+        <div class="acciones">
+          <button class="btn btn-primary" onclick="mostrarFormCurso()">+ Nuevo Curso</button>
+        </div>
+        <div id="form-nuevo-curso" class="card" style="display:none;">
+          <h2>Crear Curso</h2>
+          <div class="form-group">
+            <label>Nombre del curso</label>
+            <input type="text" id="curso-nombre" placeholder="Ej: Ingeniería de Software I">
+          </div>
+          <div class="form-group">
+            <label>Código</label>
+            <input type="text" id="curso-codigo" placeholder="Ej: IS101">
+          </div>
+          <div class="form-group">
+            <label>Semestre</label>
+            <input type="text" id="curso-semestre" placeholder="Ej: 2026-1">
+          </div>
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" id="curso-anio" value="2026">
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="curso-descripcion" placeholder="Descripción del curso..."></textarea>
+          </div>
+          <div class="acciones">
+            <button class="btn btn-primary" onclick="guardarCurso()">Guardar</button>
+            <button class="btn btn-outline" onclick="document.getElementById('form-nuevo-curso').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <div id="lista-cursos-docente"></div>
+      </div>
+
+      <!-- TAB: Rúbricas -->
+      <div id="tab-rubricas" class="tab-content" style="display:none;">
+        <div class="acciones">
+          <button class="btn btn-primary" onclick="mostrarFormRubrica()">+ Nueva Rúbrica</button>
+        </div>
+        <div id="form-nueva-rubrica" class="card" style="display:none;">
+          <h2>Crear Rúbrica</h2>
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" id="rubrica-nombre" placeholder="Ej: Evaluación de Trabajo en Equipo">
+          </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea id="rubrica-descripcion"></textarea>
+          </div>
+          <div class="acciones">
+            <button class="btn btn-primary" onclick="guardarRubrica()">Crear Rúbrica</button>
+            <button class="btn btn-outline" onclick="document.getElementById('form-nueva-rubrica').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <div id="lista-rubricas"></div>
+      </div>
+
+      <!-- TAB: Evaluaciones -->
+      <div id="tab-evaluaciones" class="tab-content" style="display:none;">
+        <div id="panel-evaluaciones-docente"></div>
+      </div>
+
+      <!-- TAB: Analítica -->
+      <div id="tab-analitica" class="tab-content" style="display:none;">
+        <div id="panel-analitica"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PANTALLA: ESTUDIANTE                         -->
+  <!-- ============================================ -->
+  <div id="pantalla-estudiante" class="pantalla">
+    <div class="header">
+      <h1>TeamTrack</h1>
+      <div class="header-user">
+        <span id="estudiante-nombre"></span>
+        <span class="rol-badge">ESTUDIANTE</span>
+        <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="nav-tabs">
+        <button class="nav-tab activo" onclick="tabEstudiante('mis-cursos')">Mis Cursos</button>
+        <button class="nav-tab" onclick="tabEstudiante('pendientes')">Evaluaciones Pendientes</button>
+        <button class="nav-tab" onclick="tabEstudiante('resultados')">Mis Resultados</button>
+      </div>
+
+      <div id="tab-mis-cursos" class="tab-content">
+        <div id="lista-cursos-estudiante"></div>
+      </div>
+
+      <div id="tab-pendientes" class="tab-content" style="display:none;">
+        <div id="lista-pendientes"></div>
+      </div>
+
+      <div id="tab-resultados" class="tab-content" style="display:none;">
+        <div id="mis-resultados"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PANTALLA: ADMIN                              -->
+  <!-- ============================================ -->
+  <div id="pantalla-admin" class="pantalla">
+    <div class="header">
+      <h1>TeamTrack</h1>
+      <div class="header-user">
+        <span id="admin-nombre"></span>
+        <span class="rol-badge">ADMIN</span>
+        <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="nav-tabs">
+        <button class="nav-tab activo" onclick="tabAdmin('usuarios')">Usuarios</button>
+        <button class="nav-tab" onclick="tabAdmin('todos-cursos')">Cursos</button>
+      </div>
+
+      <div id="tab-usuarios" class="tab-content">
+        <div class="acciones">
+          <button class="btn btn-primary" onclick="mostrarFormUsuario()">+ Nuevo Usuario</button>
+        </div>
+        <div id="form-nuevo-usuario" class="card" style="display:none;">
+          <h2>Registrar Usuario</h2>
+          <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" id="usu-nombre">
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <input type="text" id="usu-apellido">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="usu-email">
+          </div>
+          <div class="form-group">
+            <label>Identificación</label>
+            <input type="text" id="usu-identificacion">
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="text" id="usu-password" value="TeamTrack2026">
+          </div>
+          <div class="form-group">
+            <label>Rol</label>
+            <select id="usu-rol">
+              <option value="ESTUDIANTE">Estudiante</option>
+              <option value="DOCENTE">Docente</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+          <div class="acciones">
+            <button class="btn btn-primary" onclick="guardarUsuario()">Guardar</button>
+            <button class="btn btn-outline" onclick="document.getElementById('form-nuevo-usuario').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <div id="lista-usuarios"></div>
+      </div>
+
+      <div id="tab-todos-cursos" class="tab-content" style="display:none;">
+        <div id="lista-todos-cursos"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- MODAL: EVALUAR                               -->
+  <!-- ============================================ -->
+  <div id="modal-evaluar" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:200; overflow-y:auto;">
+    <div style="max-width:600px; margin:20px auto; background:white; border-radius:16px; padding:24px;">
+      <h2 id="eval-titulo" style="margin-bottom:16px;"></h2>
+      <div id="eval-criterios"></div>
+      <div class="form-group" style="margin-top:16px;">
+        <label>Comentario general (opcional)</label>
+        <textarea id="eval-comentario-general" placeholder="Escribe un comentario general..."></textarea>
+      </div>
+      <div class="acciones" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="enviarEvaluacion()">Enviar Evaluación</button>
+        <button class="btn btn-outline" onclick="cerrarModalEval()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PANTALLA: DETALLE CURSO (DOCENTE)            -->
+  <!-- ============================================ -->
+  <div id="pantalla-detalle-curso" class="pantalla">
+    <div class="header">
+      <h1>TeamTrack</h1>
+      <div class="header-user">
+        <button class="btn-logout" onclick="volverAlPanel()">← Volver</button>
+      </div>
+    </div>
+    <div class="container">
+      <h2 id="detalle-curso-titulo" style="margin-bottom:16px;"></h2>
+      <div class="nav-tabs">
+        <button class="nav-tab activo" onclick="tabDetalleCurso('info')">Información</button>
+        <button class="nav-tab" onclick="tabDetalleCurso('estudiantes')">Estudiantes</button>
+        <button class="nav-tab" onclick="tabDetalleCurso('equipos')">Equipos</button>
+        <button class="nav-tab" onclick="tabDetalleCurso('ev-periodos')">Evaluaciones</button>
+        <button class="nav-tab" onclick="tabDetalleCurso('dashboard')">Dashboard</button>
+      </div>
+      <div id="detalle-curso-contenido"></div>
+    </div>
+  </div>
+
+
+<script>
+// ============================================================
+// TeamTrack - JavaScript Principal
+// ============================================================
+
+// ⚠️ IMPORTANTE: Cambia esta URL por la de tu Google Apps Script
+// La obtienes cuando publicas el script como app web
+var API_URL = 'https://script.google.com/macros/s/AKfycbwRid6mIxGHmZRsGPuSrQEyNz7aI5qAZBCso7BbjbuySaUpASofSCPzy26kmD8A2Z8C/exec';
+
+// Estado global
+var usuario = null;
+var cursoActual = null;
+var evaluacionActual = null;
+
+// ============================================================
+// API - Comunicación con Google Apps Script
+// ============================================================
+
+function llamarAPI(accion, params) {
+  return new Promise(function(resolve, reject) {
+    var url = API_URL + '?accion=' + accion;
+
+    if (params) {
+      for (var key in params) {
+        if (params[key] !== undefined && params[key] !== null) {
+          url += '&' + key + '=' + encodeURIComponent(params[key]);
+        }
+      }
+    }
+
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(resolve)
+      .catch(function(err) {
+        reject({ exito: false, mensaje: 'Error de conexión: ' + err.message });
+      });
+  });
+}
+
+function llamarAPIPost(accion, datos) {
+  return new Promise(function(resolve, reject) {
+    fetch(API_URL + '?accion=' + accion, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
+    })
+      .then(function(r) { return r.json(); })
+      .then(resolve)
+      .catch(function(err) {
+        reject({ exito: false, mensaje: 'Error de conexión: ' + err.message });
+      });
+  });
+}
+
+// ============================================================
+// AUTENTICACIÓN
+// ============================================================
+
+function iniciarSesion() {
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value.trim();
+  var errorDiv = document.getElementById('login-error');
+  var btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorDiv.textContent = 'Ingresa tu email y contraseña';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Ingresando...';
+  errorDiv.style.display = 'none';
+
+  llamarAPI('login', { email: email, password: password })
+    .then(function(resp) {
+      btn.disabled = false;
+      btn.textContent = 'Iniciar Sesión';
+
+      if (resp.exito) {
+        usuario = resp.datos;
+        localStorage.setItem('teamtrack_usuario', JSON.stringify(usuario));
+        cargarPanelUsuario();
+      } else {
+        errorDiv.textContent = resp.mensaje;
+        errorDiv.style.display = 'block';
+      }
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.textContent = 'Iniciar Sesión';
+      errorDiv.textContent = 'Error al conectar con el servidor';
+      errorDiv.style.display = 'block';
+    });
+}
+
+function cerrarSesion() {
+  usuario = null;
+  localStorage.removeItem('teamtrack_usuario');
+  mostrarPantalla('login');
+}
+
+function cargarPanelUsuario() {
+  if (!usuario) return;
+
+  if (usuario.rol === 'ADMIN') {
+    document.getElementById('admin-nombre').textContent = usuario.nombre;
+    mostrarPantalla('admin');
+    cargarUsuarios();
+  } else if (usuario.rol === 'DOCENTE') {
+    document.getElementById('docente-nombre').textContent = usuario.nombre + ' ' + usuario.apellido;
+    mostrarPantalla('docente');
+    cargarCursosDocente();
+  } else {
+    document.getElementById('estudiante-nombre').textContent = usuario.nombre + ' ' + usuario.apellido;
+    mostrarPantalla('estudiante');
+    cargarCursosEstudiante();
+  }
+}
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
+
+function mostrarPantalla(nombre) {
+  document.querySelectorAll('.pantalla').forEach(function(p) {
+    p.classList.remove('activa');
+  });
+  document.getElementById('pantalla-' + nombre).classList.add('activa');
+}
+
+function tabDocente(tab) {
+  document.querySelectorAll('#pantalla-docente .tab-content').forEach(function(t) { t.style.display = 'none'; });
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('#pantalla-docente .nav-tab').forEach(function(t) { t.classList.remove('activo'); });
+  event.target.classList.add('activo');
+
+  if (tab === 'rubricas') cargarRubricas();
+  if (tab === 'evaluaciones') cargarPanelEvaluacionesDocente();
+  if (tab === 'analitica') cargarPanelAnalitica();
+}
+
+function tabEstudiante(tab) {
+  document.querySelectorAll('#pantalla-estudiante .tab-content').forEach(function(t) { t.style.display = 'none'; });
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('#pantalla-estudiante .nav-tab').forEach(function(t) { t.classList.remove('activo'); });
+  event.target.classList.add('activo');
+
+  if (tab === 'pendientes') cargarPendientes();
+  if (tab === 'resultados') cargarMisResultados();
+}
+
+function tabAdmin(tab) {
+  document.querySelectorAll('#pantalla-admin .tab-content').forEach(function(t) { t.style.display = 'none'; });
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('#pantalla-admin .nav-tab').forEach(function(t) { t.classList.remove('activo'); });
+  event.target.classList.add('activo');
+
+  if (tab === 'todos-cursos') cargarTodosCursos();
+}
+
+function tabDetalleCurso(tab) {
+  document.querySelectorAll('#pantalla-detalle-curso .nav-tab').forEach(function(t) { t.classList.remove('activo'); });
+  event.target.classList.add('activo');
+  cargarDetalleCursoTab(tab);
+}
+
+// ============================================================
+// DOCENTE - CURSOS
+// ============================================================
+
+function mostrarFormCurso() {
+  document.getElementById('form-nuevo-curso').style.display = 'block';
+}
+
+function guardarCurso() {
+  var datos = {
+    nombre: document.getElementById('curso-nombre').value,
+    codigo: document.getElementById('curso-codigo').value,
+    semestre: document.getElementById('curso-semestre').value,
+    anio: parseInt(document.getElementById('curso-anio').value),
+    descripcion: document.getElementById('curso-descripcion').value,
+    docenteId: usuario.id
+  };
+
+  if (!datos.nombre || !datos.codigo || !datos.semestre) {
+    alert('Completa los campos obligatorios');
+    return;
+  }
+
+  llamarAPIPost('crearCurso', datos).then(function(resp) {
+    if (resp.exito) {
+      document.getElementById('form-nuevo-curso').style.display = 'none';
+      cargarCursosDocente();
+    } else {
+      alert(resp.mensaje);
+    }
+  });
+}
+
+function cargarCursosDocente() {
+  var contenedor = document.getElementById('lista-cursos-docente');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando cursos...</p></div>';
+
+  llamarAPI('listarCursos', { docenteId: usuario.id }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '';
+      resp.datos.forEach(function(curso) {
+        html += '<div class="card" onclick="abrirDetalleCurso(\'' + curso.id + '\')" style="cursor:pointer;">';
+        html += '<div class="card-header"><h3>' + curso.nombre + '</h3>';
+        html += '<span class="badge badge-primary">' + curso.codigo + '</span></div>';
+        html += '<p style="font-size:13px;color:var(--gray-500);">' + curso.semestre + ' ' + curso.anio + '</p>';
+        html += '<p style="font-size:13px;color:var(--gray-500);margin-top:4px;">Fase: <strong>' + curso.fase + '</strong></p>';
+        html += '</div>';
+      });
+      contenedor.innerHTML = html;
+    } else {
+      contenedor.innerHTML = '<div class="vacio"><div class="vacio-icono">📚</div><p>No tienes cursos aún. Crea tu primer curso.</p></div>';
+    }
+  });
+}
+
+function abrirDetalleCurso(cursoId) {
+  cursoActual = cursoId;
+  mostrarPantalla('detalle-curso');
+  cargarDetalleCurso(cursoId);
+}
+
+function volverAlPanel() {
+  cargarPanelUsuario();
+}
+
+function cargarDetalleCurso(cursoId) {
+  llamarAPI('obtenerCurso', { cursoId: cursoId }).then(function(resp) {
+    if (resp.exito) {
+      var c = resp.datos;
+      document.getElementById('detalle-curso-titulo').textContent = c.nombre + ' (' + c.codigo + ')';
+      cargarDetalleCursoTab('info', c);
+    }
+  });
+}
+
+function cargarDetalleCursoTab(tab, cursoData) {
+  var contenedor = document.getElementById('detalle-curso-contenido');
+
+  if (tab === 'info') {
+    if (cursoData) {
+      contenedor.innerHTML = '<div class="card">' +
+        '<p><strong>Código:</strong> ' + cursoData.codigo + '</p>' +
+        '<p><strong>Semestre:</strong> ' + cursoData.semestre + ' ' + cursoData.anio + '</p>' +
+        '<p><strong>Fase:</strong> ' + cursoData.fase + '</p>' +
+        '<p><strong>Estado:</strong> ' + cursoData.estado + '</p>' +
+        '<p><strong>Descripción:</strong> ' + (cursoData.descripcion || 'Sin descripción') + '</p>' +
+        '<p style="margin-top:12px;"><strong>Estudiantes inscritos:</strong> ' + (cursoData.estudiantes ? cursoData.estudiantes.length : 0) + '</p>' +
+        '<p><strong>Equipos:</strong> ' + (cursoData.equipos ? cursoData.equipos.length : 0) + '</p>' +
+        '</div>';
+    } else {
+      llamarAPI('obtenerCurso', { cursoId: cursoActual }).then(function(resp) {
+        if (resp.exito) cargarDetalleCursoTab('info', resp.datos);
+      });
+    }
+  }
+
+  if (tab === 'estudiantes') {
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    llamarAPI('listarInscritos', { cursoId: cursoActual }).then(function(resp) {
+      var html = '<div class="card"><h2>Estudiantes Inscritos</h2>';
+      html += '<div class="acciones"><button class="btn btn-sm btn-primary" onclick="promptInscribir()">+ Inscribir Estudiante</button></div>';
+      if (resp.exito && resp.datos.length > 0) {
+        html += '<div class="tabla-responsive"><table><thead><tr><th>Nombre</th><th>Email</th><th>Acción</th></tr></thead><tbody>';
+        resp.datos.forEach(function(est) {
+          html += '<tr><td>' + est.nombre + '</td><td>' + est.email + '</td>';
+          html += '<td><button class="btn btn-sm btn-danger" onclick="desinscribir(\'' + est.usuarioId + '\')">Remover</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      } else {
+        html += '<p style="color:var(--gray-500);">No hay estudiantes inscritos.</p>';
+      }
+      html += '</div>';
+      contenedor.innerHTML = html;
+    });
+  }
+
+  if (tab === 'equipos') {
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    llamarAPI('listarEquipos', { cursoId: cursoActual }).then(function(resp) {
+      var html = '<div class="acciones">';
+      html += '<button class="btn btn-sm btn-primary" onclick="promptCrearGrupo()">+ Grupo</button>';
+      html += '<button class="btn btn-sm btn-primary" onclick="promptCrearEquipo()">+ Equipo</button>';
+      html += '</div>';
+      if (resp.exito && resp.datos.length > 0) {
+        resp.datos.forEach(function(equipo) {
+          html += '<div class="card"><div class="card-header"><h3>' + equipo.nombre + '</h3>';
+          html += '<button class="btn btn-sm btn-outline" onclick="promptAgregarMiembro(\'' + equipo.id + '\')">+ Miembro</button></div>';
+          if (equipo.miembros && equipo.miembros.length > 0) {
+            html += '<div class="tabla-responsive"><table><thead><tr><th>Nombre</th><th>Líder</th></tr></thead><tbody>';
+            equipo.miembros.forEach(function(m) {
+              html += '<tr><td>' + m.nombre + '</td><td>' + (m.esLider ? '⭐ Sí' : 'No') + '</td></tr>';
+            });
+            html += '</tbody></table></div>';
+          } else {
+            html += '<p style="color:var(--gray-500);font-size:13px;">Sin miembros asignados</p>';
+          }
+          html += '</div>';
+        });
+      } else {
+        html += '<div class="vacio"><p>No hay equipos. Crea un grupo primero y luego equipos.</p></div>';
+      }
+      contenedor.innerHTML = html;
+    });
+  }
+
+  if (tab === 'ev-periodos') {
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    Promise.all([
+      llamarAPI('listarPeriodos', { cursoId: cursoActual }),
+      llamarAPI('listarRubricas', { creadoPorId: usuario.id })
+    ]).then(function(results) {
+      var periodos = results[0];
+      var rubricas = results[1];
+
+      var html = '<div class="card"><h2>Crear Periodo de Evaluación</h2>';
+      html += '<div class="form-group"><label>Nombre</label><input type="text" id="per-nombre" placeholder="Ej: Coevaluación Sprint 1"></div>';
+      html += '<div class="form-group"><label>Tipo</label><select id="per-tipo">';
+      html += '<option value="AUTOEVALUACION">Autoevaluación</option>';
+      html += '<option value="COEVALUACION">Coevaluación</option>';
+      html += '<option value="EVALUACION_DOCENTE">Evaluación Docente</option></select></div>';
+      html += '<div class="form-group"><label>Rúbrica</label><select id="per-rubrica">';
+      if (rubricas.exito) {
+        rubricas.datos.forEach(function(r) {
+          html += '<option value="' + r.id + '">' + r.nombre + '</option>';
+        });
+      }
+      html += '</select></div>';
+      html += '<div class="form-group"><label>Fecha inicio</label><input type="date" id="per-inicio"></div>';
+      html += '<div class="form-group"><label>Fecha fin</label><input type="date" id="per-fin"></div>';
+      html += '<button class="btn btn-primary" onclick="crearPeriodo()">Crear Periodo</button></div>';
+
+      // Lista de periodos
+      if (periodos.exito && periodos.datos.length > 0) {
+        periodos.datos.forEach(function(p) {
+          html += '<div class="card"><div class="card-header"><h3>' + p.nombre + '</h3>';
+          var badgeClass = p.estado === 'ABIERTA' ? 'badge-success' : p.estado === 'CERRADA' ? 'badge-danger' : 'badge-warning';
+          html += '<span class="badge ' + badgeClass + '">' + p.estado + '</span></div>';
+          html += '<p style="font-size:13px;color:var(--gray-500);">Tipo: ' + p.tipo + '</p>';
+          html += '<div class="acciones" style="margin-top:8px;">';
+          if (p.estado === 'BORRADOR') {
+            html += '<button class="btn btn-sm btn-success" onclick="abrirPeriodoEval(\'' + p.id + '\')">Abrir</button>';
+          }
+          if (p.estado === 'ABIERTA') {
+            html += '<button class="btn btn-sm btn-danger" onclick="cerrarPeriodoEval(\'' + p.id + '\')">Cerrar</button>';
+            html += '<button class="btn btn-sm btn-outline" onclick="verProgreso(\'' + p.id + '\')">Ver Progreso</button>';
+          }
+          if (p.estado === 'CERRADA' || p.estado === 'ABIERTA') {
+            html += '<button class="btn btn-sm btn-primary" onclick="verResultados(\'' + p.id + '\')">Ver Resultados</button>';
+          }
+          html += '</div></div>';
+        });
+      }
+      contenedor.innerHTML = html;
+    });
+  }
+
+  if (tab === 'dashboard') {
+    contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    llamarAPI('dashboardCurso', { cursoId: cursoActual }).then(function(resp) {
+      if (resp.exito) {
+        var d = resp.datos;
+        var html = '<div class="stats-grid">';
+        html += '<div class="stat-card"><div class="stat-value">' + d.totalEstudiantes + '</div><div class="stat-label">Estudiantes</div></div>';
+        html += '<div class="stat-card"><div class="stat-value">' + d.totalEquipos + '</div><div class="stat-label">Equipos</div></div>';
+        html += '<div class="stat-card"><div class="stat-value">' + d.evaluacionesCompletadas + '/' + d.evaluacionesTotales + '</div><div class="stat-label">Evaluaciones</div></div>';
+        html += '<div class="stat-card"><div class="stat-value">' + d.tasaCompletado + '%</div><div class="stat-label">Tasa Completado</div></div>';
+        html += '</div>';
+
+        html += '<div class="card"><h3 style="margin-bottom:8px;">Progreso General</h3>';
+        html += '<div class="progress-bar"><div class="fill" style="width:' + d.tasaCompletado + '%"></div></div>';
+        html += '<p style="font-size:12px;color:var(--gray-500);margin-top:4px;">' + d.tasaCompletado + '% completado</p></div>';
+
+        contenedor.innerHTML = html;
+      }
+    });
+  }
+}
+
+// ============================================================
+// DOCENTE - ACCIONES RÁPIDAS (prompts)
+// ============================================================
+
+function promptInscribir() {
+  var email = prompt('Email del estudiante a inscribir:');
+  if (!email) return;
+  // Buscar usuario por email
+  llamarAPI('listarUsuarios', { busqueda: email }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var est = resp.datos[0];
+      llamarAPI('inscribir', { cursoId: cursoActual, usuarioId: est.id }).then(function(r) {
+        alert(r.mensaje);
+        cargarDetalleCursoTab('estudiantes');
+      });
+    } else {
+      alert('No se encontró un usuario con ese email. Primero debe registrarse.');
+    }
+  });
+}
+
+function desinscribir(usuarioId) {
+  if (!confirm('¿Seguro que quieres remover a este estudiante?')) return;
+  llamarAPI('desinscribir', { cursoId: cursoActual, usuarioId: usuarioId }).then(function(r) {
+    alert(r.mensaje);
+    cargarDetalleCursoTab('estudiantes');
+  });
+}
+
+function promptCrearGrupo() {
+  var nombre = prompt('Nombre del grupo:');
+  if (!nombre) return;
+  llamarAPI('crearGrupo', { cursoId: cursoActual, nombre: nombre }).then(function(r) {
+    alert(r.mensaje);
+    cargarDetalleCursoTab('equipos');
+  });
+}
+
+function promptCrearEquipo() {
+  llamarAPI('listarGrupos', { cursoId: cursoActual }).then(function(resp) {
+    if (!resp.exito || resp.datos.length === 0) {
+      alert('Primero debes crear un grupo.');
+      return;
+    }
+    var grupoId = resp.datos[0].id; // Usa el primer grupo
+    if (resp.datos.length > 1) {
+      var opciones = resp.datos.map(function(g, i) { return (i + 1) + '. ' + g.nombre; }).join('\n');
+      var seleccion = prompt('Selecciona el grupo (número):\n' + opciones);
+      if (!seleccion) return;
+      grupoId = resp.datos[parseInt(seleccion) - 1].id;
+    }
+    var nombre = prompt('Nombre del equipo:');
+    if (!nombre) return;
+    llamarAPI('crearEquipo', { grupoId: grupoId, cursoId: cursoActual, nombre: nombre }).then(function(r) {
+      alert(r.mensaje);
+      cargarDetalleCursoTab('equipos');
+    });
+  });
+}
+
+function promptAgregarMiembro(equipoId) {
+  var email = prompt('Email del estudiante a agregar:');
+  if (!email) return;
+  llamarAPI('listarUsuarios', { busqueda: email }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var esLider = confirm('¿Es líder del equipo?');
+      llamarAPI('agregarMiembro', { equipoId: equipoId, usuarioId: resp.datos[0].id, esLider: esLider }).then(function(r) {
+        alert(r.mensaje);
+        cargarDetalleCursoTab('equipos');
+      });
+    } else {
+      alert('Estudiante no encontrado.');
+    }
+  });
+}
+
+// ============================================================
+// DOCENTE - RÚBRICAS
+// ============================================================
+
+function mostrarFormRubrica() {
+  document.getElementById('form-nueva-rubrica').style.display = 'block';
+}
+
+function guardarRubrica() {
+  var datos = {
+    nombre: document.getElementById('rubrica-nombre').value,
+    descripcion: document.getElementById('rubrica-descripcion').value,
+    creadoPorId: usuario.id
+  };
+
+  if (!datos.nombre) { alert('Ingresa un nombre'); return; }
+
+  llamarAPIPost('crearRubrica', datos).then(function(resp) {
+    if (resp.exito) {
+      document.getElementById('form-nueva-rubrica').style.display = 'none';
+      alert('Rúbrica creada. Ahora agrega criterios.');
+      cargarRubricas();
+    }
+  });
+}
+
+function cargarRubricas() {
+  var contenedor = document.getElementById('lista-rubricas');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  llamarAPI('listarRubricas', { creadoPorId: usuario.id }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '';
+      resp.datos.forEach(function(r) {
+        html += '<div class="card"><div class="card-header"><h3>' + r.nombre + '</h3>';
+        html += '<span class="badge badge-primary">v' + r.version + '</span></div>';
+        html += '<p style="font-size:13px;color:var(--gray-500);">' + (r.descripcion || '') + '</p>';
+        html += '<div class="acciones" style="margin-top:8px;">';
+        html += '<button class="btn btn-sm btn-outline" onclick="verCriterios(\'' + r.id + '\')">Ver/Agregar Criterios</button>';
+        html += '</div></div>';
+      });
+      contenedor.innerHTML = html;
+    } else {
+      contenedor.innerHTML = '<div class="vacio"><div class="vacio-icono">📋</div><p>No tienes rúbricas. Crea una para empezar.</p></div>';
+    }
+  });
+}
+
+function verCriterios(rubricaId) {
+  llamarAPI('listarCriterios', { rubricaId: rubricaId }).then(function(resp) {
+    var html = '<div class="card"><h2>Criterios de la Rúbrica</h2>';
+    html += '<div class="acciones"><button class="btn btn-sm btn-primary" onclick="promptAgregarCriterio(\'' + rubricaId + '\')">+ Agregar Criterio</button></div>';
+
+    if (resp.exito && resp.datos.length > 0) {
+      html += '<div class="tabla-responsive"><table><thead><tr><th>Orden</th><th>Nombre</th><th>Peso</th><th>Máx</th></tr></thead><tbody>';
+      resp.datos.forEach(function(c) {
+        html += '<tr><td>' + c.orden + '</td><td>' + c.nombre + '</td><td>' + c.peso + '</td><td>' + c.puntuacionMax + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += '<p style="color:var(--gray-500);">Sin criterios aún.</p>';
+    }
+    html += '</div>';
+
+    document.getElementById('lista-rubricas').innerHTML += html;
+  });
+}
+
+function promptAgregarCriterio(rubricaId) {
+  var nombre = prompt('Nombre del criterio:');
+  if (!nombre) return;
+  var peso = prompt('Peso (ej: 1.0):', '1');
+  var max = prompt('Puntuación máxima (ej: 5):', '5');
+  var orden = prompt('Orden (ej: 1):', '1');
+
+  llamarAPIPost('agregarCriterio', {
+    rubricaId: rubricaId,
+    nombre: nombre,
+    peso: parseFloat(peso),
+    puntuacionMax: parseInt(max),
+    orden: parseInt(orden)
+  }).then(function(r) {
+    alert(r.mensaje);
+    cargarRubricas();
+  });
+}
+
+// ============================================================
+// DOCENTE - PERIODOS DE EVALUACIÓN
+// ============================================================
+
+function crearPeriodo() {
+  var datos = {
+    nombre: document.getElementById('per-nombre').value,
+    tipo: document.getElementById('per-tipo').value,
+    cursoId: cursoActual,
+    rubricaId: document.getElementById('per-rubrica').value,
+    fechaInicio: document.getElementById('per-inicio').value,
+    fechaFin: document.getElementById('per-fin').value,
+    creadoPorId: usuario.id
+  };
+
+  if (!datos.nombre || !datos.rubricaId) { alert('Completa los campos'); return; }
+
+  llamarAPIPost('crearPeriodo', datos).then(function(r) {
+    alert(r.mensaje);
+    cargarDetalleCursoTab('ev-periodos');
+  });
+}
+
+function abrirPeriodoEval(periodoId) {
+  if (!confirm('¿Abrir este periodo? Se generarán las evaluaciones para todos los equipos.')) return;
+  llamarAPI('abrirPeriodo', { periodoId: periodoId }).then(function(r) {
+    alert(r.mensaje);
+    cargarDetalleCursoTab('ev-periodos');
+  });
+}
+
+function cerrarPeriodoEval(periodoId) {
+  if (!confirm('¿Cerrar este periodo?')) return;
+  llamarAPI('cerrarPeriodo', { periodoId: periodoId }).then(function(r) {
+    alert(r.mensaje);
+    cargarDetalleCursoTab('ev-periodos');
+  });
+}
+
+function verProgreso(periodoId) {
+  llamarAPI('progresoPeriodo', { periodoId: periodoId }).then(function(resp) {
+    if (resp.exito) {
+      var d = resp.datos;
+      alert('Progreso:\n' +
+        'Total: ' + d.total + '\n' +
+        'Completadas: ' + d.completadas + '\n' +
+        'Pendientes: ' + d.pendientes + '\n' +
+        'Porcentaje: ' + d.porcentaje + '%');
+    }
+  });
+}
+
+function verResultados(periodoId) {
+  llamarAPI('obtenerResultados', { periodoId: periodoId }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '<div class="card"><h2>Resultados</h2>';
+      html += '<div class="tabla-responsive"><table><thead><tr><th>#</th><th>Estudiante</th><th>Promedio</th><th>Evaluaciones</th></tr></thead><tbody>';
+      resp.datos.forEach(function(r, i) {
+        html += '<tr><td>' + (i + 1) + '</td><td>' + r.evaluadoNombre + '</td>';
+        html += '<td><strong>' + r.promedio + '%</strong></td>';
+        html += '<td>' + r.totalEvaluaciones + '</td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+
+      document.getElementById('detalle-curso-contenido').innerHTML = html;
+    } else {
+      alert('No hay resultados disponibles aún.');
+    }
+  });
+}
+
+// ============================================================
+// DOCENTE - ANALÍTICA
+// ============================================================
+
+function cargarPanelEvaluacionesDocente() {
+  var contenedor = document.getElementById('panel-evaluaciones-docente');
+  contenedor.innerHTML = '<div class="card"><p>Selecciona un curso para gestionar evaluaciones. Ve a "Mis Cursos" y haz clic en un curso.</p></div>';
+}
+
+function cargarPanelAnalitica() {
+  var contenedor = document.getElementById('panel-analitica');
+  contenedor.innerHTML = '<div class="card"><p>Selecciona un curso para ver la analítica. Ve a "Mis Cursos" → clic en el curso → pestaña "Dashboard".</p></div>';
+}
+
+// ============================================================
+// ESTUDIANTE - CURSOS Y EVALUACIONES
+// ============================================================
+
+function cargarCursosEstudiante() {
+  var contenedor = document.getElementById('lista-cursos-estudiante');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  llamarAPI('listarCursos', { estudianteId: usuario.id }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '';
+      resp.datos.forEach(function(c) {
+        html += '<div class="card">';
+        html += '<div class="card-header"><h3>' + c.nombre + '</h3>';
+        html += '<span class="badge badge-primary">' + c.codigo + '</span></div>';
+        html += '<p style="font-size:13px;color:var(--gray-500);">Docente: ' + c.docenteNombre + '</p>';
+        html += '<p style="font-size:13px;color:var(--gray-500);">' + c.semestre + ' ' + c.anio + '</p>';
+        html += '</div>';
+      });
+      contenedor.innerHTML = html;
+    } else {
+      contenedor.innerHTML = '<div class="vacio"><div class="vacio-icono">📚</div><p>No estás inscrito en ningún curso.</p></div>';
+    }
+  });
+}
+
+function cargarPendientes() {
+  var contenedor = document.getElementById('lista-pendientes');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  llamarAPI('obtenerPendientes', { evaluadorId: usuario.id }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '<div class="alert alert-info">Tienes <strong>' + resp.datos.length + '</strong> evaluaciones pendientes</div>';
+      resp.datos.forEach(function(ev) {
+        html += '<div class="card">';
+        html += '<div class="card-header"><h3>' + ev.periodoNombre + '</h3>';
+        html += '<span class="badge badge-warning">' + ev.periodoTipo + '</span></div>';
+        html += '<p style="font-size:14px;margin-bottom:8px;">Evaluar a: <strong>' + ev.evaluadoNombre + '</strong></p>';
+        html += '<button class="btn btn-primary btn-sm" onclick="iniciarEvaluacion(\'' + ev.id + '\', \'' + ev.periodoId + '\', \'' + ev.evaluadoNombre + '\')">Evaluar</button>';
+        html += '</div>';
+      });
+      contenedor.innerHTML = html;
+    } else {
+      contenedor.innerHTML = '<div class="vacio"><div class="vacio-icono">✅</div><p>No tienes evaluaciones pendientes.</p></div>';
+    }
+  });
+}
+
+function iniciarEvaluacion(evaluacionId, periodoId, evaluadoNombre) {
+  evaluacionActual = { id: evaluacionId, periodoId: periodoId };
+
+  // Obtener rúbrica del periodo
+  var infoPeriodo = null;
+  llamarAPI('listarPeriodos', {}).then(function() {
+    // Buscar el periodo para obtener la rúbrica
+    return llamarAPI('obtenerPendientes', { evaluadorId: usuario.id });
+  }).then(function(resp) {
+    // Necesitamos la rúbrica - obtener info del periodo
+    return new Promise(function(resolve) {
+      // Buscar en periodos
+      var periodoInfo = obtenerInfoPeriodoLocal(periodoId);
+      resolve(periodoInfo);
+    });
+  });
+
+  // Buscar rúbrica directamente desde los periodos
+  document.getElementById('eval-titulo').textContent = 'Evaluar a: ' + evaluadoNombre;
+  var criteriosDiv = document.getElementById('eval-criterios');
+  criteriosDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  // Obtener criterios - necesitamos la rubricaId del periodo
+  // Por simplicidad, obtener todos los periodos y buscar
+  llamarAPI('obtenerPendientes', { evaluadorId: usuario.id }).then(function(resp) {
+    var evaluacion = resp.datos.find(function(e) { return e.id === evaluacionId; });
+    if (!evaluacion) return;
+
+    // Obtener la rubrica a partir del periodo
+    // Necesitamos acceso a los periodos
+    return fetch(API_URL + '?accion=listarPeriodos&cursoId=').then(function(r) { return r.json(); });
+  }).then(function(periodos) {
+    // Buscar el periodo correcto
+    if (periodos && periodos.datos) {
+      var periodo = periodos.datos.find(function(p) { return p.id === periodoId; });
+      if (periodo && periodo.rubricaId) {
+        evaluacionActual.rubricaId = periodo.rubricaId;
+        return llamarAPI('listarCriterios', { rubricaId: periodo.rubricaId });
+      }
+    }
+    // Fallback: intentar obtener todos los criterios
+    return llamarAPI('listarRubricas', {}).then(function(rubs) {
+      if (rubs.datos && rubs.datos.length > 0) {
+        return llamarAPI('listarCriterios', { rubricaId: rubs.datos[0].id });
+      }
+      return { exito: false, datos: [] };
+    });
+  }).then(function(resp) {
+    if (resp && resp.exito && resp.datos.length > 0) {
+      evaluacionActual.criterios = resp.datos;
+      var html = '';
+      resp.datos.forEach(function(c, idx) {
+        html += '<div class="evaluacion-criterio">';
+        html += '<h4>' + c.nombre + '</h4>';
+        html += '<p>' + (c.descripcion || '') + ' (Peso: ' + c.peso + ')</p>';
+        html += '<div class="puntuacion-selector" id="crit-' + idx + '">';
+        for (var p = 1; p <= c.puntuacionMax; p++) {
+          html += '<button class="puntuacion-btn" onclick="seleccionarPuntuacion(' + idx + ',' + p + ',this)" data-value="' + p + '">' + p + '</button>';
+        }
+        html += '</div>';
+        html += '<div class="form-group" style="margin-top:8px;">';
+        html += '<input type="text" id="crit-com-' + idx + '" placeholder="Comentario (opcional)" style="font-size:13px;">';
+        html += '</div>';
+        html += '</div>';
+      });
+      criteriosDiv.innerHTML = html;
+    } else {
+      criteriosDiv.innerHTML = '<p style="color:var(--danger);">No se encontraron criterios para esta evaluación.</p>';
+    }
+  });
+
+  document.getElementById('modal-evaluar').style.display = 'block';
+}
+
+function seleccionarPuntuacion(criterioIdx, valor, btn) {
+  // Deseleccionar todos en ese grupo
+  var grupo = document.getElementById('crit-' + criterioIdx);
+  grupo.querySelectorAll('.puntuacion-btn').forEach(function(b) {
+    b.classList.remove('seleccionado');
+  });
+  btn.classList.add('seleccionado');
+}
+
+function cerrarModalEval() {
+  document.getElementById('modal-evaluar').style.display = 'none';
+  evaluacionActual = null;
+}
+
+function enviarEvaluacion() {
+  if (!evaluacionActual || !evaluacionActual.criterios) return;
+
+  var respuestas = [];
+  for (var i = 0; i < evaluacionActual.criterios.length; i++) {
+    var grupo = document.getElementById('crit-' + i);
+    var seleccionado = grupo.querySelector('.puntuacion-btn.seleccionado');
+    if (!seleccionado) {
+      alert('Debes puntuar todos los criterios. Falta: ' + evaluacionActual.criterios[i].nombre);
+      return;
+    }
+
+    respuestas.push({
+      criterioId: evaluacionActual.criterios[i].id,
+      criterioNombre: evaluacionActual.criterios[i].nombre,
+      puntuacion: parseInt(seleccionado.dataset.value),
+      peso: evaluacionActual.criterios[i].peso,
+      puntuacionMax: evaluacionActual.criterios[i].puntuacionMax,
+      comentario: document.getElementById('crit-com-' + i).value
+    });
+  }
+
+  var datos = {
+    evaluacionId: evaluacionActual.id,
+    respuestas: respuestas,
+    comentarioGeneral: document.getElementById('eval-comentario-general').value
+  };
+
+  llamarAPIPost('completarEvaluacion', datos).then(function(resp) {
+    if (resp.exito) {
+      alert('Evaluación completada. Puntuación: ' + resp.datos.puntuacionTotal + '%');
+      cerrarModalEval();
+      cargarPendientes();
+    } else {
+      alert(resp.mensaje);
+    }
+  });
+}
+
+function cargarMisResultados() {
+  var contenedor = document.getElementById('mis-resultados');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  // Obtener cursos y estadísticas
+  llamarAPI('listarCursos', { estudianteId: usuario.id }).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var promises = resp.datos.map(function(c) {
+        return llamarAPI('estadisticasEstudiante', { estudianteId: usuario.id, cursoId: c.id })
+          .then(function(stats) {
+            return { curso: c, estadisticas: stats.datos || null };
+          });
+      });
+
+      Promise.all(promises).then(function(resultados) {
+        var html = '';
+        resultados.forEach(function(r) {
+          html += '<div class="card"><h3>' + r.curso.nombre + '</h3>';
+          if (r.estadisticas && r.estadisticas.totalEvaluaciones > 0) {
+            var s = r.estadisticas.estadisticas;
+            html += '<div class="stats-grid">';
+            html += '<div class="stat-card"><div class="stat-value">' + s.media + '%</div><div class="stat-label">Promedio</div></div>';
+            html += '<div class="stat-card"><div class="stat-value">' + s.mediana + '%</div><div class="stat-label">Mediana</div></div>';
+            html += '<div class="stat-card"><div class="stat-value">' + s.minimo + '%</div><div class="stat-label">Mínimo</div></div>';
+            html += '<div class="stat-card"><div class="stat-value">' + s.maximo + '%</div><div class="stat-label">Máximo</div></div>';
+            html += '</div>';
+            html += '<p style="font-size:13px;color:var(--gray-500);">Basado en ' + r.estadisticas.totalEvaluaciones + ' evaluaciones recibidas</p>';
+          } else {
+            html += '<p style="color:var(--gray-500);">No hay evaluaciones completadas aún.</p>';
+          }
+          html += '</div>';
+        });
+        contenedor.innerHTML = html || '<div class="vacio"><p>No hay resultados disponibles.</p></div>';
+      });
+    } else {
+      contenedor.innerHTML = '<div class="vacio"><div class="vacio-icono">📊</div><p>No estás inscrito en ningún curso.</p></div>';
+    }
+  });
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+
+function mostrarFormUsuario() {
+  document.getElementById('form-nuevo-usuario').style.display = 'block';
+}
+
+function guardarUsuario() {
+  var datos = {
+    nombre: document.getElementById('usu-nombre').value,
+    apellido: document.getElementById('usu-apellido').value,
+    email: document.getElementById('usu-email').value,
+    identificacion: document.getElementById('usu-identificacion').value,
+    password: document.getElementById('usu-password').value,
+    rol: document.getElementById('usu-rol').value
+  };
+
+  if (!datos.nombre || !datos.email) { alert('Nombre y email son requeridos'); return; }
+
+  llamarAPIPost('registrar', datos).then(function(resp) {
+    alert(resp.mensaje);
+    if (resp.exito) {
+      document.getElementById('form-nuevo-usuario').style.display = 'none';
+      cargarUsuarios();
+    }
+  });
+}
+
+function cargarUsuarios() {
+  var contenedor = document.getElementById('lista-usuarios');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  llamarAPI('listarUsuarios', {}).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '<div class="card"><div class="tabla-responsive"><table>';
+      html += '<thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead><tbody>';
+      resp.datos.forEach(function(u) {
+        html += '<tr><td>' + u.nombre + ' ' + u.apellido + '</td>';
+        html += '<td>' + u.email + '</td>';
+        html += '<td><span class="badge badge-primary">' + u.rol + '</span></td>';
+        html += '<td>' + (u.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div></div>';
+      contenedor.innerHTML = html;
+    }
+  });
+}
+
+function cargarTodosCursos() {
+  var contenedor = document.getElementById('lista-todos-cursos');
+  contenedor.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  llamarAPI('listarCursos', {}).then(function(resp) {
+    if (resp.exito && resp.datos.length > 0) {
+      var html = '<div class="card"><div class="tabla-responsive"><table>';
+      html += '<thead><tr><th>Nombre</th><th>Código</th><th>Docente</th><th>Semestre</th><th>Estado</th></tr></thead><tbody>';
+      resp.datos.forEach(function(c) {
+        html += '<tr><td>' + c.nombre + '</td><td>' + c.codigo + '</td>';
+        html += '<td>' + c.docenteNombre + '</td><td>' + c.semestre + '</td>';
+        html += '<td><span class="badge badge-success">' + c.estado + '</span></td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+      contenedor.innerHTML = html;
+    }
+  });
+}
+
+// ============================================================
+// INICIO - Verificar sesión guardada
+// ============================================================
+
+window.addEventListener('load', function() {
+  var guardado = localStorage.getItem('teamtrack_usuario');
+  if (guardado) {
+    usuario = JSON.parse(guardado);
+    cargarPanelUsuario();
+  }
+
+  // Enter en login
+  document.getElementById('login-password').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') iniciarSesion();
+  });
+});
+</script>
+
+</body>
+</html>
